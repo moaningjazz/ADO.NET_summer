@@ -1,0 +1,162 @@
+﻿@using Ninject
+@using Auction.Ioc
+@using Auction.BLL.Interfaces
+@using Auction.Entities
+@{
+    Layout = "~/Pages/Layouts/_HeaderLayout.cshtml";
+    if (!User.Identity.IsAuthenticated)
+    {
+        Response.Redirect("~");
+    }
+    var lotLogic = DependencyResolver.Kernel.Get<ILotLogic>();
+}
+
+@if (IsPost)
+{
+    if (Request["Action"] == "AddLot")
+    {
+        string message;
+        var userLogic = DependencyResolver.Kernel.Get<IUserLogic>();
+
+        User user = userLogic.GetByUsername(User.Identity.Name);
+        decimal cost;
+        if (decimal.TryParse(Request["Cost"], out cost))
+        {
+            byte[] image = WebImage.GetImageFromRequest()?.GetBytes();
+            lotLogic.Add(
+                Request["Title"],
+                Request["Description"],
+                user.Id,
+                cost,
+                image,
+                out message);
+            <script>
+                alert('@message');
+            </script>
+        }
+    }
+    else if (Request["Action"] == "RemoveLot")
+    {
+        int idLot;
+
+        if (int.TryParse(Request["IdLot"], out idLot))
+        {
+            Lot lot = lotLogic.GetById(idLot);
+            if (lot != null &&
+                lot.Seller.Username == User.Identity.Name)
+            {
+                lotLogic.Remove(lot);
+            }
+        }
+    }
+    else if (Request["Action"] == "EditLot")
+    {
+        string message;
+        var userLogic = DependencyResolver.Kernel.Get<IUserLogic>();
+
+        int idLot;
+        if (int.TryParse(Request["IdLot"], out idLot))
+        {
+            Lot lot = lotLogic.GetById(idLot);
+            decimal? cost = null;
+            decimal costParseValue;
+
+            if (decimal.TryParse(Request["Cost"], out costParseValue))
+            {
+                cost = costParseValue;
+            }
+
+
+            if (lot != null &&
+                lot.Seller.Username == User.Identity.Name)
+            {
+                byte[] image = WebImage.GetImageFromRequest()?.GetBytes();
+                lotLogic.Edit(
+                    Request["Title"],
+                    Request["Description"],
+                    cost,
+                    image,
+                    lot,
+                    out message);
+
+                <script>alert('@message')</script>
+            }
+        }
+    }
+}
+
+<div class="container">
+
+    <div class="lot">
+        <form action="~/Pages/LotManagment.cshtml" method="post" class="add-form" enctype="multipart/form-data">
+
+            <input type="text" name="Action" class="hidden" value="AddLot" />
+
+            <input required type="file" name="LotImage" value="" id="lot-image-add" class="hidden" multiple accept="image/*" />
+            <label for="lot-image-add" class="add-image-label">Add image</label>
+            <div class="text-input-add-lot">
+                <div>
+                    <input required maxlength="32" minlength="4" type="text" name="Title" value="" placeholder="Title" />
+                    <input required type="number" name="Cost" value="" placeholder="Cost" />
+                </div>
+                <textarea required maxlength="250" minlength="4" name="Description" value="" placeholder="Description"></textarea>
+            </div>
+
+            <button>Add lot</button>
+        </form>
+    </div>
+
+    @foreach (var lot in lotLogic.GetAll().Where(e => e.Seller.Username == User.Identity.Name && e.Buyer == null))
+    {
+        <div class="lot">
+            <img src="data:image/png;base64, @(Convert.ToBase64String(lot.Image))" alt="Lot image" />
+            <div class="lot-info-block">
+                <div>@lot.Title</div>
+                <div>@lot.Description</div>
+            </div>
+            <div class="seller">
+                <b>Seller:&nbsp;</b>@lot.Seller.Username
+            </div>
+            <div class="cost-lot">
+                <b>Cost:&nbsp;</b>@lot.Cost$
+            </div>
+            <div class="lot-buttons">
+                <div class="edit-btn-container">
+                    <button class="edit-btn" onclick="openModalWindowWithValue('edit-lot-modal-window', 'id-lot-edit-input', @lot.Id)">
+                        Edit
+                    </button>
+                </div>
+                <form action="~/Pages/LotManagment.cshtml" method="post">
+                    <input type="text" name="Action" value="RemoveLot" class="hidden" />
+                    <input type="number" name="IdLot" value="@lot.Id" class="hidden" />
+                    <button>Remove</button>
+                </form>
+            </div>
+        </div>
+    }
+
+
+
+    <div class="modal-window" id="edit-lot-modal-window">
+        <form action="~/Pages/LotManagment.cshtml" method="post" class="modal-window-content" enctype="multipart/form-data">
+            <div class="button-close-modal-window" onclick="closeModalWindow('edit-lot-modal-window')">&times;</div>
+            <h1>Edit lot</h1>
+
+            <input type="text" name="Action" value="EditLot" class="hidden" />
+            <input type="number" name="IdLot" value="" id="id-lot-edit-input" class="hidden"/>
+
+            <input type="file" name="Image" value="" id="lot-image-edit" class="hidden" multiple accept="image/*" />
+            <label for="lot-image-edit" class="add-image-label">Add image</label>
+
+            <input maxlength="32" minlength="4" type="text" name="Title" value="" placeholder="New title" />
+            <input type="number" name="Cost" value="" placeholder="New cost" />
+            <textarea maxlength="250" minlength="4" placeholder="New description" name="Description"></textarea>
+
+            <button>Edit</button>
+        </form>
+    </div>
+</div>
+
+
+
+<script src="~/Scripts/modal.js"></script>

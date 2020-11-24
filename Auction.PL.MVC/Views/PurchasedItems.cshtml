@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Auction.PL.MVC.ViewModel.DisplayLotVM>
+@{
+    Layout = "~/Views/Layouts/_HeaderLayout.cshtml";
+    if (!User.Identity.IsAuthenticated)
+    {
+        Response.Redirect("~");
+    }
+}
+
+<div class="container">
+
+    @foreach (var lot in Model)
+    {
+        <div class="lot">
+            <img src="data:image/png;base64, @(Convert.ToBase64String(lot.Image))" alt="Lot image" />
+            <div class="lot-info-block">
+                <div>@lot.Title</div>
+                <div>@lot.Description</div>
+            </div>
+            <div class="seller">
+                <b>Seller:&nbsp;</b>@lot.Seller.Username
+            </div>
+            <div class="cost-lot">
+                <b>Cost:&nbsp;</b>@lot.Cost$
+            </div>
+        </div>
+    }
+
+    
+</div>

@@ -1,0 +1,34 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <link rel="stylesheet" href="~/Styles/Style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="~/Index.cshtml">Lots</a>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a href="~/Pages/PurchasedItems.cshtml">Purchased Items</a>
+                <a href="~/Pages/LotManagment.cshtml">Lot Management</a>
+                <a href="~/Pages/MyProfile.cshtml">My Profile</a>
+                <a href="~/Pages/LogOut.cshtml">LogOut</a>
+            }
+            else
+            {
+                <a href="~/Pages/Login.cshtml">Login</a>
+            }
+        </div>
+    </header>
+    <div>
+        @RenderBody()
+    </div>
+</body>
+</html>

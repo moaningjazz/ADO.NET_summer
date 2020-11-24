@@ -1,0 +1,48 @@
+﻿@using Ninject
+@using Auction.Ioc
+@using Auction.BLL.Interfaces
+@using Auction.Entities
+@{
+    Layout = "~/Pages/Layouts/_HeaderLayout.cshtml";
+    var lotLogic = DependencyResolver.Kernel.Get<ILotLogic>();
+    var userLogic = DependencyResolver.Kernel.Get<IUserLogic>();
+}
+
+@if (IsPost)
+{
+    int idLot;
+    if (int.TryParse(Request["IdLot"], out idLot))
+    {
+        userLogic.Buy(userLogic.GetByUsername(User.Identity.Name),
+            lotLogic.GetById(idLot));
+    }
+}
+
+<div class="container">
+    @foreach (var lot in lotLogic.GetAll().Where(e => e.Buyer == null && e.Seller.Username != User.Identity.Name))
+    {
+        <div class="lot">
+            <img src="data:image/png;base64, @(Convert.ToBase64String(lot.Image))" alt="Lot image" />
+            <div class="lot-info-block">
+                <div>@lot.Title</div>
+                <div>@lot.Description</div>
+            </div>
+            <div class="seller">
+                <b>Seller:&nbsp;</b>@lot.Seller.Username
+            </div>
+            <div class="cost-lot">
+                <b>Cost:&nbsp;</b> @lot.Cost$
+            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="lot-buttons">
+                    <form action="~/Index.cshtml" method="post">
+                        <input type="number" name="IdLot" value="@lot.Id" class="hidden" />
+                        <button>Buy</button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+</div>
+

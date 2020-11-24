@@ -1,0 +1,49 @@
+﻿@{
+    Layout = "~/Views/Layouts/_HeaderLayout.cshtml";
+
+    if (User.Identity.IsAuthenticated)
+    {
+        Response.Redirect("~");
+    }
+}
+
+
+<div class="login-btn-container">
+    <button onclick="openModalWindow('sign-in-modal-window')">Sign In</button>
+    <button onclick="openModalWindow('sign-up-modal-window')">Sign Up</button>
+</div>
+
+<div class="modal-window" id="sign-in-modal-window">
+    @using (Html.BeginForm("SignIn", "Auction", FormMethod.Post, new { @class = "modal-window-content", enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="button-close-modal-window" onclick="closeModalWindow('sign-in-modal-window')">&times;</div>
+        <h1>Sign In</h1>
+
+        <input required maxlength="32" minlength="4" type="text" name="username" value="" placeholder="Username" />
+        <input required maxlength="32" minlength="4" type="password" name="password" value="" placeholder="Password" />
+
+        <button>Login</button>
+    }
+</div>
+
+<div class="modal-window" id="sign-up-modal-window">
+
+    @using (Html.BeginForm("SignUp", "Auction", FormMethod.Post, new { @class = "modal-window-content", enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="button-close-modal-window" onclick="closeModalWindow('sign-up-modal-window')">&times;</div>
+        <h1>Registration</h1>
+
+        <input required maxlength="32" minlength="4" type="text" name="username" value="" placeholder="Username" />
+        <input required maxlength="32" minlength="4" type="password" name="password" value="" placeholder="Password" />
+        <input required maxlength="32" minlength="4" type="password" name="repeatPassword" value="" placeholder="Repeat password" />
+
+
+        <button>Sign Up</button>
+    }
+</div>
+
+
+<script src="~/Scripts/modal.js"></script>

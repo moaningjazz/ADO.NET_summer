@@ -1,0 +1,54 @@
+﻿@using Ninject
+@using Auction.Ioc
+@using Auction.BLL.Interfaces
+@using Auction.Entities
+@{
+    Layout = "~/Pages/Layouts/_HeaderLayout.cshtml";
+    if (!User.Identity.IsAuthenticated)
+    {
+        Response.Redirect("~");
+    }
+}
+
+@if (IsPost)
+{
+    var userLogic = DependencyResolver.Kernel.Get<IUserLogic>();
+    if (Request["Action"] == "ChangePassword")
+    {
+        string message;
+        userLogic.ChangePassword(
+            Request["OldPassword"],
+            Request["NewPassword"],
+            Request["RepeatNewPassword"],
+            User.Identity.Name,
+            out message);
+
+        <script>alert('@message')</script>
+    }
+    else if (Request["Action"] == "ChangeUsername")
+    {
+        string message;
+        userLogic.ChangeUsername(Request["Username"], User.Identity.Name, out message);
+        <script>alert('@message')</script>
+    }
+}
+
+<div class="container">
+    <h1>My Profile</h1>
+    <form action="~/Pages/MyProfile.cshtml" method="post" class="my-profile-form">
+        <h3>Change username</h3>
+        <div>@User.Identity.Name</div>
+        <input type="text" name="Action" value="ChangeUsername" class="hidden" />
+        <input required maxlength="32" minlength="4" type="text" name="Username" value="" placeholder="Change username" />
+        <button>Change username</button>
+    </form>
+
+    <form action="~/Pages/MyProfile.cshtml" method="post" class="my-profile-form">
+        <h3>Change password</h3>
+        <input type="text" name="Action" value="ChangePassword" class="hidden" />
+        <input required maxlength="32" minlength="4" type="password" name="OldPassword" value="" placeholder="Old password" />
+        <input required maxlength="32" minlength="4" type="password" name="NewPassword" value="" placeholder="New password" />
+        <input required maxlength="32" minlength="4" type="password" name="RepeatNewPassword" value="" placeholder="Repeat new password" />
+        <button>Repeat password</button>
+    </form>
+</div>
